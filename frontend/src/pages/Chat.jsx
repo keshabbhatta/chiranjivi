@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { AiOutlineUser, AiOutlineRobot, AiOutlineSend } from "react-icons/ai";
+import { AiOutlineSend } from "react-icons/ai";
 
 function Chat() {
   const [question, setQuestion] = useState("");
@@ -51,7 +51,7 @@ function Chat() {
   return (
     <div className="h-screen flex flex-col" style={{ backgroundImage: `url(https://d157qvbc2uf2q6.cloudfront.net/app/uploads/2023/09/Customer-Interactions-with-AI-powered-Chatbots.jpg)`, backgroundSize: 'cover', backgroundPosition: 'left center' }}>
       <div className="max-w-screen-md mx-auto p-4 flex-1 bg-white bg-opacity-80">
-        <h1 className="text-3xl text-center mb-4 font-bold">Dirghaaayu</h1>
+        <h1 className="text-3xl text-center mb-4 font-bold">Chiranjivi</h1>
         <p className="text-center mb-4">Provide symptoms and get help</p>
         
         <div

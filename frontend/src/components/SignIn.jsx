@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom"; // <-- Imported useNavigate
 import { loginSuccess } from "../redux/reducers/userSlice";
 
 const SignIn = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // <-- Initialized navigate
+  
   const [loading, setLoading] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [email, setEmail] = useState("");
@@ -22,17 +25,23 @@ const SignIn = () => {
     setLoading(true);
     setButtonDisabled(true);
     if (validateInputs()) {
-      console.log("Email:", email); // Should show a valid email
-      console.log("Password:", password); // Should show the password
       try {
-        const res = await axios.post("http://localhost:8080/api/user/login", {
+        const res = await axios.post("http://localhost:5000/api/auth/login", {
           email,
           password,
         });
+        
+        // Save to Redux store
         dispatch(loginSuccess(res.data));
-        alert("Login Success");
+        
+        // Optional: Save token/user to localStorage if you want them to stay logged in after a refresh
+        localStorage.setItem("token", res.data.token);
+        
+        // Redirect to homepage/dashboard
+        navigate("/"); 
+        
       } catch (err) {
-        console.log(err.response?.data); // Log error response
+        console.log(err.response?.data); 
         alert(err.response?.data?.message || err.message);
       } finally {
         setLoading(false);
@@ -44,24 +53,24 @@ const SignIn = () => {
     }
   };
   
-
   return (
     <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 mt-24">Welcome to Vidhyalaya 🩵</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mt-24">Welcome to CHIRANJIVI 🩵</h2>
         <p className="text-gray-600">Please login with your details here</p>
       </div>
       <div className="space-y-4">
         <input
           type="email"
-          className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          // Added bg-white to ensure it matches the sign up page exactly
+          className="w-full p-3 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-400"
           placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <input
           type="password"
-          className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-3 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-400"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -69,7 +78,7 @@ const SignIn = () => {
         <button
           onClick={handleSignIn}
           disabled={buttonDisabled}
-          className={`w-full p-3 mt-4 text-white bg-blue-600 rounded-md focus:outline-none ${
+          className={`w-full p-3 mt-4 font-semibold text-white bg-blue-600 rounded-md focus:outline-none transition-colors duration-200 ${
             buttonDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
           }`}
         >

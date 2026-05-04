@@ -213,7 +213,7 @@ const handleLocateMe = () => {
 return (
     <div className="bg-blue-900 text-white min-h-screen flex flex-col items-center px-4">
       <header className="py-4 w-full flex justify-center items-center">
-        <div className="text-lg font-semibold">Dirghaaayu</div>
+        <div className="text-lg font-semibold">Chiranjivi</div>
       </header>
 
       <div className="text-center mt-6">
