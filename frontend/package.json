@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@google/generative-ai": "^0.24.1",
     "@heroicons/react": "^1.0.6",
     "@mui/icons-material": "^5.18.0",
     "@mui/lab": "^5.0.0-alpha.169",
@@ -29,6 +30,7 @@
     "react-simple-typewriter": "^5.0.1",
     "react-typewriter-effect": "^1.1.0",
     "redux-persist": "^6.0.0",
+    "socket.io-client": "^4.8.3",
     "string-natural-compare": "^3.0.1",
     "styled-components": "^6.1.8",
     "typewriter-effect": "^2.21.0",

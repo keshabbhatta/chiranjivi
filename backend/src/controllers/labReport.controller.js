@@ -1,118 +1,63 @@
-const asyncHandler  = require("express-async-handler");
-const OpenAI        = require("openai");
-const LabReport     = require("../models/LabReport.model");
-const cloudinary    = require("../config/cloudinary");
-const { uploadToCloudinary } = require("../middleware/upload.middleware");
+const asyncHandler = require("express-async-handler");
+const LabReport = require("../models/LabReport.model");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// ── POST /api/lab-reports ─────────────────────────────────
+// @desc    Create a new lab report
+// @route   POST /api/lab-reports
 const createReport = asyncHandler(async (req, res) => {
-  const { title, testType, reportDate, labName, doctorName, notes, results } = req.body;
+  const { title, results } = req.body;
 
-  let fileUrl = "", filePublicId = "", fileType = "other";
+  if (!results) {
+    res.status(400);
+    throw new Error("Report results data is missing.");
+  }
 
-  if (req.file) {
-    const folder       = "healthcare/lab-reports";
-    const resourceType = req.file.mimetype === "application/pdf" ? "raw" : "image";
-    const uploaded     = await uploadToCloudinary(req.file.buffer, folder, resourceType);
-    fileUrl      = uploaded.secure_url;
-    filePublicId = uploaded.public_id;
-    fileType     = resourceType === "raw" ? "pdf" : "image";
+  // Safely parse the results string coming from FormData
+  let parsedResults;
+  try {
+    parsedResults = typeof results === "string" ? JSON.parse(results) : results;
+  } catch (err) {
+    res.status(400);
+    throw new Error("Invalid results format. Must be valid JSON.");
   }
 
   const report = await LabReport.create({
     user: req.user._id,
-    title, testType, reportDate, labName, doctorName, notes,
-    fileUrl, filePublicId, fileType,
-    results: results ? JSON.parse(results) : [],
+    title: title || "AI Lab Report Analysis",
+    results: parsedResults
   });
 
-  res.status(201).json({ success: true, message: "Lab report uploaded", data: report });
+  res.status(201).json({ success: true, data: report });
 });
 
-// ── GET /api/lab-reports ──────────────────────────────────
+// @desc    Get user's lab reports
+// @route   GET /api/lab-reports
 const getReports = asyncHandler(async (req, res) => {
-  const page  = parseInt(req.query.page)  || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip  = (page - 1) * limit;
-
-  const query = { user: req.user._id };
-  if (req.query.testType) query.testType = req.query.testType;
-
-  const [reports, total] = await Promise.all([
-    LabReport.find(query).sort({ reportDate: -1 }).skip(skip).limit(limit),
-    LabReport.countDocuments(query),
-  ]);
-
-  res.json({
-    success: true,
-    data: reports,
-    pagination: { page, limit, total, pages: Math.ceil(total / limit) },
-  });
+  // .sort({ createdAt: -1 }) ensures the newest reports show at the top of the Profile
+  const reports = await LabReport.find({ user: req.user._id }).sort({ createdAt: -1 });
+  
+  // Return 'reports' array directly in the object so frontend maps it easily
+  res.status(200).json({ success: true, reports: reports });
 });
 
-// ── GET /api/lab-reports/:id ──────────────────────────────
-const getReportById = asyncHandler(async (req, res) => {
-  const report = await LabReport.findOne({ _id: req.params.id, user: req.user._id });
-  if (!report) { res.status(404); throw new Error("Report not found"); }
-  res.json({ success: true, data: report });
-});
+// @desc    Delete a lab report
+// @route   DELETE /api/lab-reports/:id
+const deleteReport = asyncHandler(async (req, res) => {
+  const report = await LabReport.findById(req.params.id);
 
-// ── POST /api/lab-reports/:id/analyze ────────────────────
-const analyzeReport = asyncHandler(async (req, res) => {
-  const report = await LabReport.findOne({ _id: req.params.id, user: req.user._id });
-  if (!report) { res.status(404); throw new Error("Report not found"); }
-
-  const resultsText = report.results.length
-    ? report.results.map((r) => `${r.parameter}: ${r.value} ${r.unit} (Normal: ${r.normalRange}) — ${r.status}`).join("\n")
-    : "No structured results provided.";
-
-  const prompt = `Analyze this medical lab report and respond ONLY in valid JSON:
-Report Type: ${report.testType}
-Lab Results:
-${resultsText}
-
-JSON format:
-{
-  "summary": "...",
-  "keyFindings": ["finding1", "finding2"],
-  "recommendation": "...",
-}`;
-
-  const completion = await openai.chat.completions.create({
-    model:       "gpt-4o-mini",
-    messages:    [{ role: "user", content: prompt }],
-    max_tokens:  600,
-    temperature: 0.3,
-  });
-
-  const rawText = completion.choices[0]?.message?.content?.trim();
-  let analysis;
-
-  try {
-    analysis = JSON.parse(rawText.replace(/```json|```/g, "").trim());
-  } catch {
-    analysis = { summary: rawText, keyFindings: [], recommendation: "" };
+  if (!report) {
+    res.status(404);
+    throw new Error("Report not found");
   }
 
-  report.aiAnalysis = { ...analysis, analyzedAt: new Date() };
-  await report.save();
-
-  res.json({ success: true, message: "Report analyzed", data: report });
-});
-
-// ── DELETE /api/lab-reports/:id ───────────────────────────
-const deleteReport = asyncHandler(async (req, res) => {
-  const report = await LabReport.findOne({ _id: req.params.id, user: req.user._id });
-  if (!report) { res.status(404); throw new Error("Report not found"); }
-
-  if (report.filePublicId) {
-    await cloudinary.uploader.destroy(report.filePublicId);
+  // Ensure the user trying to delete it is the one who created it
+  if (report.user.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error("User not authorized to delete this report");
   }
 
   await report.deleteOne();
-  res.json({ success: true, message: "Report deleted" });
+
+  res.status(200).json({ success: true, id: req.params.id });
 });
 
-module.exports = { createReport, getReports, getReportById, analyzeReport, deleteReport };
+module.exports = { createReport, getReports, deleteReport };

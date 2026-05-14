@@ -211,7 +211,7 @@ const Navbar = () => {
         <MobileMenu isOpen={isOpen}>
           <StyledNavLink to="/" onClick={() => setIsOpen(false)}>Home</StyledNavLink>
           <StyledNavLink to="/symptomcheck" onClick={() => setIsOpen(false)}>Symptom Check</StyledNavLink>
-          <ExternalLink href="http://reportanalyzer.streamlit.app" target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)}>Lab Report</ExternalLink>
+          <StyledNavLink to="/labreport" onClick={() => setIsOpen(false)}>Lab Report</StyledNavLink>
           <StyledNavLink to="/chat" onClick={() => setIsOpen(false)}>Chat</StyledNavLink>
         </MobileMenu>
         
@@ -219,7 +219,7 @@ const Navbar = () => {
         <NavItems>
           <StyledNavLink to="/">Home</StyledNavLink>
           <StyledNavLink to="/symptomcheck">Symptom Check</StyledNavLink>
-          <ExternalLink href="http://reportanalyzer.streamlit.app" target="_blank" rel="noopener noreferrer">Lab Report</ExternalLink>
+          <StyledNavLink to="/labreport">Lab Report</StyledNavLink>
           <StyledNavLink to="/chat">Chat</StyledNavLink>
         </NavItems>
 
