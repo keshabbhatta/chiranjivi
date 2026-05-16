@@ -1,310 +1,421 @@
-import React, { useState } from 'react';
-import { SearchIcon, LocationMarkerIcon } from '@heroicons/react/solid';
+import React, { useState } from "react";
+import {
+  SearchIcon,
+  LocationMarkerIcon,
+} from "@heroicons/react/solid";
 
 const SearchBar = () => {
   const hospitals = [
-    
- { name: "Alka Hospital", location: "lalitpur" },
- { name: "Anandaban Hospital", location: "Tika Bhairab, Lele, Lalitpur" },
- { name: "Arbuda Rog Nibaran Santha", location: "bagbazar, kathmandu" },
- { name: "B & B Hospital", location: "Gwarko, kathmandu" },
- { name: "Bhaktapur Cancer Hospital", location: "bhaktapur" },
- { name: "Bheri Hospital", location: "nepalgunj" },
-    { name: "Biratnagar Eye Hospital", location: "biratnagar" },
-    { name: "bir Hospital", location: "Tundikhel, kathmandu" },
-    { name: "Birendra Hospital", location: "chhauni, kathmandu" },
-    { name: "Bogoni Vision Center", location: "dhanusa" },
-    { name: "B.P. Koirala Institute of Health Sciences", location: "dharan"},
-    { name: "Dhanusa Hospital", location: "Dhanusa" },
-    { name: "DI Skin Hospital and Referral Center", location: "Golfutar, Budhanilkantha, Kathmandu" },
-    { name: "Far Western Regional Eye Hospital", location: "Dhangadhi" },
-    { name: "Gandhi Tulasi Manohara Community Hospital", location: "Kadaghari, Kathmandu" },
-    { name: "Grande Hospital", location: "Dhapasi, Kathmandu" },
-    { name: "Hetauda Hospital", location: "Hetauda, Makwanpur, Bagmati Province, Nepal" },
-    { name: "Human Organ Transplant Centre", location: "Dudhpati-17, Bhaktapur, Bagmati Province, Nepal" },
-    { name: "Province Hospital Janakpur", location: "Janakpur" },
-    { name: "Janaki Medical College", location: "Janakpur" },
-    { name: "Kanti Children's Hospital", location: "Kathmandu" },
-    { name: "Karnali Academy of Health Sciences", location: "Jumla" },
-    { name: "Karnali Provincial Hospital", location: "Surkhet, Karnali Province, Nepal" },
-    { name: "Kathmandu Cancer Center Hospital", location: "Tathali Nala Road, Bhaktapur" },
-    { name: "Kirtipur Hospital", location: "Kirtipur, Kathmandu" },
-    { name: "Koshi Hospital", location: "Biratnagar-10, Morang, Koshi Province, Nepal" },
-    { name: "Kunde Hospital", location: "Kunde, Solukhumbu" },
-    { name: "Lumbini Provincial Hospital", location: "Butwal, Lumbini Province, Nepal" },
-    { name: "Madan Bhandari Academy of Health Sciences", location: "Hetauda, Bagmati Province, Nepal" },
-    { name: "Mahakali Provincial Hospital", location: "mahendranagar" },
-    { name: "Mahatma Gandhi Memorial Hospital (Bhojpur)", location: "Bhojpur" },
-    { name: "Motherland Hospital", location: "Pepsicola, Kathmandu" },
-    { name: "National Cardiac Centre", location: "Basundhara, Kathmandu" },
-    { name: "Narayani Zonal Hospital", location: "Birgunj" },
-    { name: "National Tuberculosis Control Center", location: "Thimi, Bhaktapur" },
-    { name: "Nepal Eye Hospital", location: "Tripureshwor, Kathmandu" },
-    { name: "Nepal Medical College Teaching Hospital", location: "Jorpati, Kathmandu" },
-    { name: "Nepal Mediciti Hospital", location: "Nakhkhu Patan, Karyabinayak" },
-    { name: "Nepal Police Hospital", location: "Maharajganj (Panipokhari), Kathmandu, Bagmati Province, Nepal" },
-    { name: "Nobel Medical College Teaching Hospital", location: "Biratnagar" },
-    { name: "Norvic Hospital", location: "Thapathali, Kathmandu" },
-    { name: "Om Hospital & Research Centre", location: "Chabahil, Kathmandu" },
-    { name: "Paropakar Maternity and Women's Hospital", location: "Kathmandu" },
-    { name: "Patan Hospital", location: "Patan" },
-    { name: "Patan Mental Hospital", location: "Lagankhel, Lalitpur" },
-    { name: "Provincial Hospital Bhadrapur", location: "Bhadrapur Municipality-08, Koshi Province, Nepal" },
-    { name: "Rapti Academy of Health Sciences", location: "Ghorahi, Lumbini Province, Nepal" },
-    { name: "Rapti Provincial Hospital", location: "Tulsipur, Dang, Lumbini Province, Nepal" },
-    { name: "Rapti Eye Hospital", location: "Tulsipur, Dang, Lumbini Province, Nepal" },
-    { name: "R.M. Kedia Eye Hospital", location: "Lipani, Birgunj" },
-    { name: "Sagarmatha Choudhary Eye Hospital, Lahan", location: "Lahan, Siraha" },
-    { name: "Sagarmatha Zonal Hospital", location: "Rajbiraj" },
-    { name: "Salyan District Hospital", location: "Khalanga, Salyan, Karnali Province, Nepal" },
-    { name: "Seti Provincial Hospital", location: "Dhangadi, Kailali, Sudurpashchim Province, Nepal" },
-    { name: "Shahid Gangalal National Heart Center", location: "Bansbari, Kathmandu" },
-    { name: "Siddhartha Children and Women Hospital", location: "Butwal, Rupandehi" },
-    { name: "Siddhasthali Rural Community Hospital", location: "Hetauda" },
-    { name: "Solu District Hospital", location: "Phaplu, Solukhumbu" },
-    { name: "Sukraraj Tropical and Infectious Disease Hospital", location: "Teku, Kathmandu" },
-    { name: "Tansen Mission Hospital", location: "Palpa, Nepal" },
-    { name: "Tilganga Institute of Ophthalmology", location: "Gaushala, Bagmati Bridge, Kathmandu" },
-    { name: "Tribhuvan University Teaching Hospital", location: "Maharajganj, Kathmandu" },
-    { name: "Udayapur District Hospital", location: "Triyuga Municipality, Udayapur district, Nepal" },
-    { name: "Vayodha Hospital", location: "Balkhu, Kathmandu" },
-    { name: "Hams Hospital", location: "Dhumbarahi" },
-    { name: "Chest Clinic of Kathmandu", location: "Dillibazar" },
-    { name: "Binaytara Foundation Cancer Center (BTFCC)", location: "Madesh Province, Janakpur, Nepal" },
-    { name: "Saptakoshi Neuro Hospital", location: "Bhokraha ward no.2, near the banks of Sunsari River, Sunsari District" },
-    { name: "Dr. Purushottam Adhikari's Mind Clinic", location: "Radhakrishna Mandir, Raniban, Kathmandu, Nepal" },
-    { name: "ERA International Hospital Pvt. Ltd.", location: "Sorakhutte, Kathmandu" }
-];
-
-const doctors = [
-    { name: "Dr. Aayush Sharma", hospital: "Alka Hospital" },
-    { name: "Dr. Bina Raut", hospital: "Anandaban Hospital" },
-    { name: "Dr. Shyam Pathak", hospital: "Arbuda Rog Nibaran Santha" },
-    { name: "Dr. Sunita Shrestha", hospital: "B & B Hospital" },
-    { name: "Dr. Ram Krishna", hospital: "Bhaktapur Cancer Hospital" },
-    { name: "Dr. Megha Pokhrel", hospital: "Bheri Hospital" },
-    { name: "Dr. Nitesh Ranjan", hospital: "Biratnagar Eye Hospital" },
-    { name: "Dr. Sita Rai", hospital: "Bir Hospital" },
-    { name: "Dr. Kiran Thapa", hospital: "Birendra Hospital" },
-    { name: "Dr. Keshav Regmi", hospital: "Bogoni Vision Center" },
-    { name: "Dr. Sarita Karki", hospital: "B.P. Koirala Institute of Health Sciences"},
-    { name: "Dr. Suman Sharma", hospital: "Dhanusa Hospital" },
-    { name: "Dr. Priya Thapa", hospital: "DI Skin Hospital and Referral Center" },
-    { name: "Dr. Anil Yadav", hospital: "Far Western Regional Eye Hospital" },
-    { name: "Dr. Maya Joshi", hospital: "Gandhi Tulasi Manohara Community Hospital" },
-    { name: "Dr. Ravi Khanal", hospital: "Grande Hospital" },
-    { name: "Dr. Sabin Acharya", hospital: "Hetauda Hospital" },
-    { name: "Dr. Rina Chaudhary", hospital: "Human Organ Transplant Centre" },
-    { name: "Dr. Nita Rathi", hospital: "Province Hospital Janakpur" },
-    { name: "Dr. Samir Ghimire", hospital: "Janaki Medical College" },
-    { name: "Dr. Pooja Bhandari", hospital: "Kanti Children's Hospital" },
-    { name: "Dr. Kumar Thapa", hospital: "Karnali Academy of Health Sciences" },
-    { name: "Dr. Ramesh Shrestha", hospital: "Karnali Provincial Hospital" },
-    { name: "Dr. Aditi Pradhan", hospital: "Kathmandu Cancer Center Hospital" },
-    { name: "Dr. Suraj Bhatta", hospital: "Kirtipur Hospital" },
-    { name: "Dr. Reena Rai", hospital: "Koshi Hospital" },
-    { name: "Dr. Sandeep Khatri", hospital: "Kunde Hospital" },
-    { name: "Dr. Manisha Joshi", hospital: "Lumbini Provincial Hospital" },
-    { name: "Dr. Shweta Bhattarai", hospital: "Madan Bhandari Academy of Health Sciences" },
-    { name: "Dr. Gaurav Sharma", hospital: "Mahakali Provincial Hospital" },
-    { name: "Dr. Kamal Adhikari", hospital: "Mahatma Gandhi Memorial Hospital (Bhojpur)" },
-    { name: "Dr. Priya Singh", hospital: "Motherland Hospital" },
-    { name: "Dr. Nirmal Regmi", hospital: "National Cardiac Centre" },
-    { name: "Dr. Parijat Kafle", hospital: "Narayani Zonal Hospital" },
-    { name: "Dr. Maya Tamang", hospital: "National Tuberculosis Control Center" },
-    { name: "Dr. Subash Thakuri", hospital: "Nepal Eye Hospital" },
-    { name: "Dr. Anisha Pradhan", hospital: "Nepal Medical College Teaching Hospital" },
-    { name: "Dr. Binita Gurung", hospital: "Nepal Mediciti Hospital" },
-    { name: "Dr. Shyam Kandel", hospital: "Nepal Police Hospital" },
-    { name: "Dr. Ram Bhandari", hospital: "Nobel Medical College Teaching Hospital" },
-    { name: "Dr. Gita Neupane", hospital: "Norvic Hospital" },
-    { name: "Dr. Mohan Shrestha", hospital: "Om Hospital & Research Centre" },
-    { name: "Dr. Anjali Shrestha", hospital: "Paropakar Maternity and Women's Hospital" },
-    { name: "Dr. Pratik Ghimire", hospital: "Patan Hospital" },
-    { name: "Dr. Tanisha Thapa", hospital: "Patan Mental Hospital" },
-    { name: "Dr. Rajesh Sharma", hospital: "Provincial Hospital Bhadrapur" },
-    { name: "Dr. Deepa Chaudhary", hospital: "Rapti Academy of Health Sciences" },
-    { name: "Dr. Rakesh Joshi", hospital: "Rapti Provincial Hospital" },
-    { name: "Dr. Suman Yadav", hospital: "Rapti Eye Hospital" },
-    { name: "Dr. Nitin Yadav", hospital: "R.M. Kedia Eye Hospital" },
-    { name: "Dr. Anita Jha", hospital: "Sagarmatha Choudhary Eye Hospital, Lahan" },
-    { name: "Dr. Aakash Kumar", hospital: "Sagarmatha Zonal Hospital" },
-    { name: "Dr. Dinesh Bhatt", hospital: "Salyan District Hospital" },
-    { name: "Dr. Bhushan Joshi", hospital: "Seti Provincial Hospital" },
-    { name: "Dr. Amrit Yadav", hospital: "Shahid Gangalal National Heart Center" },
-    { name: "Dr. Preeti Sharma", hospital: "Siddhartha Children and Women Hospital" },
-    { name: "Dr. Prakash Thapa", hospital: "Siddhasthali Rural Community Hospital" },
-    { name: "Dr. Rishav Shrestha", hospital: "Solu District Hospital" },
-    { name: "Dr. Mahesh Kumar", hospital: "Sukraraj Tropical and Infectious Disease Hospital" },
-    { name: "Dr. Suresh Ghimire", hospital: "Tansen Mission Hospital" },
-    { name: "Dr. Aditi Singh", hospital: "Tilganga Institute of Ophthalmology" },
-    { name: "Dr. Prashant Chaudhary", hospital: "Tribhuvan University Teaching Hospital" },
-    { name: "Dr. Jaya Rathi", hospital: "Udayapur District Hospital" },
-    { name: "Dr. Binod Shah", hospital: "Vayodha Hospital" },
-    { name: "Dr. Pawan Thapa", hospital: "Hams Hospital" },
-    { name: "Dr. Suman Rai", hospital: "Chest Clinic of Kathmandu" },
-    { name: "Dr. Anurag Ghimire", hospital: "Binaytara Foundation Cancer Center (BTFCC)" },
-    { name: "Dr. Rajendra Thapa", hospital: "Saptakoshi Neuro Hospital" },
-    { name: "Dr. Shashi Rathi", hospital: "Dr. Purushottam Adhikari's Mind Clinic" },
-    { name: "Dr. Ranjan Khatri", hospital: "ERA International Hospital Pvt. Ltd." }
-];
-
-
-  const providerLinks = [
-    { icon: "🦷", title: "Find dental providers", description: "Search dentist" },
-    { icon: "👓", title: "Find vision care providers", description: "Search a vision care provider" },
-    { icon: "🧠", title: "Find mental health providers", description: "Search mental health/behavioral health providers" },
-    { icon: "💊", title: "Find network pharmacies", description: "Search a network pharmacy" },
+    {
+      name: "Busan National University Hospital",
+      location: "Seo-gu, Busan",
+    },
+    {
+      name: "Dong-A University Hospital",
+      location: "Seo-gu, Busan",
+    },
+    {
+      name: "Inje University Busan Paik Hospital",
+      location: "Busanjin-gu, Busan",
+    },
+    {
+      name: "Kosin University Gospel Hospital",
+      location: "Seo-gu, Busan",
+    },
+    {
+      name: "Good Gang-An Hospital",
+      location: "Suyeong-gu, Busan",
+    },
+    {
+      name: "Busan St. Mary's Hospital",
+      location: "Nam-gu, Busan",
+    },
+    {
+      name: "Haeundae Paik Hospital",
+      location: "Haeundae-gu, Busan",
+    },
+    {
+      name: "Medi Hospital",
+      location: "Dongnae-gu, Busan",
+    },
   ];
 
-  // State to handle input and results
-  const [doctorName, setDoctorName] = useState('');
-  const [location, setLocation] = useState('');
+  const doctors = [
+    {
+      name: "Dr. Kim Min Soo",
+      hospital: "Busan National University Hospital",
+    },
+    {
+      name: "Dr. Park Ji Eun",
+      hospital: "Dong-A University Hospital",
+    },
+    {
+      name: "Dr. Lee Hyun Woo",
+      hospital: "Inje University Busan Paik Hospital",
+    },
+    {
+      name: "Dr. Choi Seo Jun",
+      hospital: "Kosin University Gospel Hospital",
+    },
+    {
+      name: "Dr. Jung Hye Jin",
+      hospital: "Good Gang-An Hospital",
+    },
+    {
+      name: "Dr. Han Ji Woo",
+      hospital: "Busan St. Mary's Hospital",
+    },
+    {
+      name: "Dr. Yoo Min Ho",
+      hospital: "Haeundae Paik Hospital",
+    },
+    {
+      name: "Dr. Shin Ara",
+      hospital: "Medi Hospital",
+    },
+  ];
+
+  const providerLinks = [
+    {
+      icon: "🚑",
+      title: "Emergency Ambulance",
+      description: "Fast emergency ambulance support",
+    },
+    {
+      icon: "🩸",
+      title: "Blood Support",
+      description: "Find blood donors nearby",
+    },
+    {
+      icon: "🏥",
+      title: "Nearby Hospitals",
+      description: "Search nearest hospitals",
+    },
+    {
+      icon: "💊",
+      title: "Emergency Pharmacy",
+      description: "24/7 pharmacy support",
+    },
+  ];
+
+  const emergencyTypes = [
+    "🚑 Ambulance",
+    "🩸 Blood Needed",
+    "❤️ Heart Problem",
+    "🦴 Accident/Injury",
+    "🤒 Fever/Sickness",
+    "🧠 Mental Emergency",
+  ];
+
+  const emergencyLevels = [
+    "Low",
+    "Medium",
+    "Critical",
+  ];
+
+  const [doctorName, setDoctorName] = useState("");
   const [filteredResult, setFilteredResult] = useState(null);
   const [searched, setSearched] = useState(false);
 
+  const [emergencyType, setEmergencyType] = useState("");
+  const [emergencyLevel, setEmergencyLevel] = useState("");
+
+  const [currentLocation, setCurrentLocation] = useState(
+    "Detecting location..."
+  );
+
+  // Search nearest hospital
   const handleSearch = () => {
-    setSearched(true); 
-    let filteredHospital = null;
-    let matchedDoctor = null;
+    setSearched(true);
 
-    // Check if hospital name is entered in the doctor field
+    let filteredHospital = hospitals[0];
+
     if (doctorName) {
-      filteredHospital = hospitals.find((hosp) =>
-        hosp.name.toLowerCase().includes(doctorName.toLowerCase())
+      filteredHospital = hospitals.find((hospital) =>
+        hospital.name
+          .toLowerCase()
+          .includes(doctorName.toLowerCase())
       );
-      matchedDoctor = doctors.find((doc) => doc.hospital === filteredHospital?.name);
-
-      if (filteredHospital) {
-        setFilteredResult({ hospital: filteredHospital, doctor: matchedDoctor });
-        return;
-      }
     }
 
-    // If location is provided but doctor name is not
-    if (location && !doctorName) {
-      filteredHospital = hospitals.find((hosp) =>
-        hosp.location.toLowerCase().includes(location.toLowerCase())
-      );
-
-      if (filteredHospital) {
-        const doctor = doctors.find((doc) => doc.hospital === filteredHospital.name);
-        setFilteredResult({ hospital: filteredHospital, doctor });
-        return;
-      }
+    if (!filteredHospital) {
+      filteredHospital = hospitals[0];
     }
 
-    // If no results found
-    setFilteredResult(null);
+    const matchedDoctor = doctors.find(
+      (doc) => doc.hospital === filteredHospital.name
+    );
+
+    setFilteredResult({
+      hospital: filteredHospital,
+      doctor: matchedDoctor,
+    });
   };
-  const getGoogleMapsLink = (location) => {
-    const googleMapsUrl = `https://www.google.com.np/maps/search/hospitals+in+${encodeURIComponent(location)}`;
-    return googleMapsUrl;
-};
 
-const handleLocateMe = () => {
-    if (location) {
-        window.open(getGoogleMapsLink(location), "_blank");
-    } else {
-        alert("Please enter a location to locate.");
-    }
-};
+  // Detect Current Location
+  const detectLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
 
-return (
-    <div className="bg-blue-900 text-white min-h-screen flex flex-col items-center px-4">
-      <header className="py-4 w-full flex justify-center items-center">
-        <div className="text-lg font-semibold">Chiranjivi</div>
+        setCurrentLocation(
+          `Latitude: ${lat.toFixed(
+            4
+          )}, Longitude: ${lng.toFixed(4)}`
+        );
+
+        // Automatically show nearest hospital
+        setFilteredResult({
+          hospital: hospitals[0],
+          doctor: doctors[0],
+        });
+
+        setSearched(true);
+      },
+      () => {
+        alert("Location access denied");
+      }
+    );
+  };
+
+  // Kakao Map
+  const openKakaoMap = () => {
+    window.open(
+      "https://map.kakao.com/link/search/hospital",
+      "_blank"
+    );
+  };
+
+  return (
+    <div className="bg-black text-white min-h-screen flex flex-col items-center px-4">
+
+      {/* Header */}
+      <header className="py-6 w-full flex justify-center">
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-widest text-cyan-400 animate-pulse">
+          BUSAN EMERGENCY HEALTHCARE
+        </h1>
       </header>
 
-      <div className="text-center mt-6">
-        <h1 className="text-4xl font-bold">Find Doctors and Health Assistance Near You</h1>
-        <p className="mt-2 text-lg">A trusted platform that you can believe</p>
+      {/* Hero Section */}
+      <div className="text-center mt-8">
+        <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
+          Emergency Medical Assistance
+        </h1>
+
+        <p className="mt-5 text-lg text-gray-300 animate-bounce">
+          Find nearby hospitals, ambulance & emergency support 🇰🇷
+        </p>
+
       </div>
 
-      <div className="mt-8 flex flex-col items-center w-full">
-        <div className="flex flex-col md:flex-row w-full md:w-auto items-center mb-2">
-          <div className="relative mb-2 md:mb-0 md:mr-2 w-full md:w-auto">
+      {/* Search Section */}
+      <div className="mt-12 bg-zinc-900/70 backdrop-blur-lg border border-gray-800 p-8 rounded-3xl shadow-2xl flex flex-col gap-5 items-center w-full max-w-5xl">
+
+        {/* Search Input */}
+        <div className="flex flex-col md:flex-row gap-4 w-full justify-center">
+
+          <div className="relative">
             <input
               type="text"
-              className="px-10 py-2 w-full md:w-96 border border-gray-300 rounded-md focus:outline-none"
-              placeholder="Search doctor or hospital name"
+              placeholder="Search doctor or hospital"
               value={doctorName}
-              onChange={(e) => setDoctorName(e.target.value)}
+              onChange={(e) =>
+                setDoctorName(e.target.value)
+              }
+              className="w-80 px-12 py-4 rounded-xl bg-black border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400"
             />
-            <SearchIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+
+            <SearchIcon className="h-5 w-5 text-cyan-400 absolute left-4 top-5" />
           </div>
-          <div className="relative mb-2 md:mb-0 md:mr-2 w-full md:w-auto">
+
+          {/* Current Location Box */}
+          <div className="relative">
             <input
               type="text"
-              className="px-10 py-2 w-full md:w-42 border border-gray-300 rounded-md focus:outline-none"
-              placeholder="Location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={currentLocation}
+              readOnly
+              className="w-80 px-12 py-4 rounded-xl bg-black border border-gray-700 text-white"
             />
-            <LocationMarkerIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+
+            <LocationMarkerIcon className="h-5 w-5 text-pink-400 absolute left-4 top-5" />
           </div>
+        </div>
+
+        {/* Emergency Dropdowns */}
+        <div className="flex flex-col md:flex-row gap-4">
+
+          {/* Emergency Type */}
+          <select
+            value={emergencyType}
+            onChange={(e) =>
+              setEmergencyType(e.target.value)
+            }
+            className="bg-black border border-gray-700 text-white px-6 py-4 rounded-xl"
+          >
+            <option value="">
+              Select Emergency Type
+            </option>
+
+            {emergencyTypes.map((type, index) => (
+              <option key={index} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+
+          {/* Emergency Level */}
+          <select
+            value={emergencyLevel}
+            onChange={(e) =>
+              setEmergencyLevel(e.target.value)
+            }
+            className="bg-black border border-gray-700 text-white px-6 py-4 rounded-xl"
+          >
+            <option value="">
+              Emergency Level
+            </option>
+
+            {emergencyLevels.map((level, index) => (
+              <option key={index} value={level}>
+                {level}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex flex-col md:flex-row gap-4">
+
           <button
             onClick={handleSearch}
-            className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-blue-700 focus:outline-none"
+            className="bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 rounded-xl font-semibold hover:scale-105 transition"
           >
             SEARCH
           </button>
+
           <button
-            onClick={handleLocateMe}
-            className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none md:ml-2"
+            onClick={openKakaoMap}
+            className="bg-gradient-to-r from-pink-500 to-purple-600 px-8 py-4 rounded-xl font-semibold hover:scale-105 transition"
           >
-            LOCATE ME
+            OPEN KAKAO MAP
+          </button>
+
+          <button
+            onClick={detectLocation}
+            className="bg-red-600 px-8 py-4 rounded-xl font-bold hover:bg-red-700 hover:scale-105 transition"
+          >
+            USE CURRENT LOCATION
           </button>
         </div>
       </div>
 
-      <div className="mt-4 text-black-400 text-center">
-        <p>You can also search by physician or hospital name</p>
-      </div>
+      {/* Search Result */}
+      {searched && filteredResult && (
+        <div className="mt-12 bg-zinc-900 border border-gray-800 w-full max-w-3xl rounded-3xl p-10 text-center shadow-2xl">
 
-      {/* Display search result */}
-      {searched && (
-        <div className="mt-12 bg-white py-12 w-full flex flex-col items-center">
-          {filteredResult ? (
-            <>
-              <h2 className="text-2xl font-bold text-blue-900">Hospital Found:</h2>
-              <p className="mt-4 text-lg text-blue-700">
-                {filteredResult.hospital.name} - {filteredResult.hospital.location}
+          <h2 className="text-4xl font-bold text-cyan-400">
+            Nearest Hospital Found
+          </h2>
+
+          <p className="mt-6 text-2xl text-white font-semibold">
+            {filteredResult.hospital.name}
+          </p>
+
+          <p className="mt-3 text-gray-400 text-lg">
+            {filteredResult.hospital.location}
+          </p>
+
+          {filteredResult.doctor && (
+            <p className="mt-5 text-xl text-pink-400 font-bold">
+              Doctor: {filteredResult.doctor.name}
+            </p>
+          )}
+
+          {/* Emergency Info inside same box */}
+          {emergencyType && (
+            <div className="mt-8 border border-red-500 bg-red-950 rounded-2xl p-6">
+
+              <h2 className="text-2xl font-bold text-red-400">
+                Emergency Support Activated 🚨
+              </h2>
+
+              <p className="mt-4 text-lg text-white">
+                Emergency Type: {emergencyType}
               </p>
-              {filteredResult.doctor && (
-                <p className="mt-2 text-lg text-gray-700">Doctor: {filteredResult.doctor.name}</p>
-              )}
-            </>
-          ) : (
-            <div className="text-center">
-              <p className="text-lg text-gray-700">No hospital or doctor found matching your search.</p>
-              {location && (
-                <a
-                  href={getGoogleMapsLink(location)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-block text-blue-600 underline"
-                >
-                  Search hospitals in {location} on Google Maps
-                </a>
-              )}
+
+              <p className="mt-2 text-lg text-white">
+                Emergency Level: {emergencyLevel}
+              </p>
+
+              <a
+  href="tel:01042129542"
+  className="mt-6 inline-block bg-red-600 px-8 py-4 rounded-xl font-bold hover:bg-red-700 hover:scale-105 transition"
+>
+  CALL AMBULANCE 🚑
+</a>
             </div>
           )}
         </div>
       )}
 
-      <div className="mt-12 w-full flex flex-wrap justify-center bg-white py-12">
+      {/* Emergency Numbers */}
+      <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+
+        <div className="bg-red-900 p-8 rounded-3xl text-center shadow-xl">
+          <h1 className="text-5xl font-bold">119</h1>
+
+          <p className="mt-3 text-lg">
+            Ambulance & Fire Emergency
+          </p>
+        </div>
+
+        <div className="bg-blue-900 p-8 rounded-3xl text-center shadow-xl">
+          <h1 className="text-5xl font-bold">112</h1>
+
+          <p className="mt-3 text-lg">
+            Police Emergency
+          </p>
+        </div>
+
+        <div className="bg-pink-900 p-8 rounded-3xl text-center shadow-xl">
+          <h1 className="text-5xl font-bold">1339</h1>
+
+          <p className="mt-3 text-lg">
+            Medical Emergency Hotline
+          </p>
+        </div>
+      </div>
+
+      {/* Provider Section */}
+      <div className="mt-20 w-full py-12 flex flex-wrap justify-center gap-6">
+
         {providerLinks.map((link, index) => (
-          <div key={index} className="w-full md:w-1/4 flex flex-col items-center p-4">
-            <div className="text-4xl">{link.icon}</div>
-            <h3 className="mt-4 text-lg font-bold text-blue-900">{link.title}</h3>
-            <p className="mt-2 text-blue-500">{link.description}☝️</p>
+          <div
+            key={index}
+            className="bg-zinc-900 border border-gray-800 hover:border-cyan-400 transition duration-300 rounded-3xl p-8 w-full md:w-64 flex flex-col items-center shadow-xl hover:scale-105"
+          >
+            <div className="text-6xl animate-bounce">
+              {link.icon}
+            </div>
+
+            <h3 className="mt-5 text-xl font-bold text-white text-center">
+              {link.title}
+            </h3>
+
+            <p className="mt-3 text-gray-400 text-center">
+              {link.description}
+            </p>
           </div>
         ))}
       </div>
+
+      {/* Footer */}
+      <footer className="mt-16 mb-10 text-gray-600 text-center">
+        © 2026 CHIRANJIVI 🇰🇷
+      </footer>
     </div>
   );
 };
 
 export default SearchBar;
-
