@@ -9,13 +9,13 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
-import storage from "redux-persist/lib/storage";
+import storageSession from "redux-persist/lib/storage/session";
 import userReducer from "./reducers/userSlice";
 
 const persistConfig = {
   key: "root",
   version: 1,
-  storage,
+  storage: storageSession,
 };
 
 const rootReducer = combineReducers({

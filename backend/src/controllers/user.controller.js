@@ -1,11 +1,53 @@
 const asyncHandler = require("express-async-handler");
 const User         = require("../models/User.model");
+const Doctor       = require("../models/Doctor.model");
 const { uploadToCloudinary } = require("../middleware/upload.middleware");
+
+// ── GET /api/users/doctors (for patient chat listing) ─────
+const getAllDoctors = asyncHandler(async (req, res) => {
+  const filter = { role: "doctor" };
+  if (req.user && req.user.id) {
+    filter._id = { $ne: req.user.id };
+  }
+
+  const doctors = await User.find(filter)
+    .select("_id name doctorUsername avatar isOnline email")
+    .sort({ createdAt: -1 });
+
+  // Optionally fetch specialization from Doctor model
+  const enrichedDoctors = await Promise.all(
+    doctors.map(async (doctor) => {
+      const doctorProfile = await Doctor.findOne({ user: doctor._id });
+      return {
+        _id: doctor._id,
+        name: doctor.name,
+        doctorUsername: doctor.doctorUsername,
+        avatar: doctor.avatar,
+        isOnline: doctor.isOnline,
+        email: doctor.email,
+        specialization: doctorProfile?.specialization || "General Practitioner",
+        experience: doctorProfile?.experience || 0,
+        rating: doctorProfile?.rating || 0,
+      };
+    })
+  );
+
+  res.json({ success: true, doctors: enrichedDoctors });
+});
 
 // ── GET /api/users/profile ────────────────────────────────
 const getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   res.json({ success: true, user });
+});
+
+// ── GET /api/user/patients (for doctor chat fallback) ─────
+const getAllPatients = asyncHandler(async (req, res) => {
+  const patients = await User.find({ role: "user", _id: { $ne: req.user.id } })
+    .select("_id name avatar isOnline email")
+    .sort({ createdAt: -1 });
+
+  res.json({ success: true, patients });
 });
 
 // ── PUT /api/users/profile ────────────────────────────────
@@ -62,4 +104,4 @@ const changePassword = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Password changed successfully" });
 });
 
-module.exports = { getProfile, updateProfile, uploadAvatar, changePassword };
+module.exports = { getAllDoctors, getAllPatients, getProfile, updateProfile, uploadAvatar, changePassword };

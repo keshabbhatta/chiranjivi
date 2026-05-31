@@ -1,21 +1,118 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom"; // <-- Imported useNavigate
+import { useNavigate } from "react-router-dom";
 import { loginSuccess } from "../redux/reducers/userSlice";
+import styled from "styled-components";
+
+const FormContainer = styled.div`
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 32px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+`;
+
+const Title = styled.h2`
+  font-size: 28px;
+  font-weight: 800;
+  color: #f1f5f9;
+  text-align: center;
+  margin-bottom: 8px;
+`;
+
+const Subtitle = styled.p`
+  color: #cbd5e1;
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 24px;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 18px;
+`;
+
+const Label = styled.label`
+  display: block;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(71, 85, 105, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: #f1f5f9;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    border-color: rgba(6, 182, 212, 0.5);
+    background: rgba(71, 85, 105, 0.3);
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+  }
+  
+  &::placeholder {
+    color: #64748b;
+  }
+`;
+
+const Button = styled.button`
+  width: 100%;
+  padding: 13px;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+`;
 
 const SignIn = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // <-- Initialized navigate
+  const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const validateInputs = () => {
     if (!email || !password) {
-      alert("Please fill in all fields");
+      setError("Please fill in all fields");
       return false;
     }
     return true;
@@ -24,6 +121,8 @@ const SignIn = () => {
   const handleSignIn = async () => {
     setLoading(true);
     setButtonDisabled(true);
+    setError("");
+    
     if (validateInputs()) {
       try {
         const res = await axios.post("http://localhost:5000/api/auth/login", {
@@ -31,18 +130,18 @@ const SignIn = () => {
           password,
         });
         
-        // Save to Redux store
         dispatch(loginSuccess(res.data));
+        sessionStorage.setItem("vidhyalaya-app-token", res.data.token);
+        window.localStorage.setItem("vidhyalaya-app-token", res.data.token);
+        window.localStorage.removeItem("token");
+        window.localStorage.removeItem("user");
         
-        // Optional: Save token/user to localStorage if you want them to stay logged in after a refresh
-        localStorage.setItem("token", res.data.token);
-        
-        // Redirect to homepage/dashboard
         navigate("/"); 
         
       } catch (err) {
-        console.log(err.response?.data); 
-        alert(err.response?.data?.message || err.message);
+        const errorMsg = err.response?.data?.message || err.message || "Failed to sign in";
+        setError(errorMsg);
+        console.error("SignIn Error:", err);
       } finally {
         setLoading(false);
         setButtonDisabled(false);
@@ -54,38 +153,37 @@ const SignIn = () => {
   };
   
   return (
-    <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
-      <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800 mt-24">Welcome to CHIRANJIVI 🩵</h2>
-        <p className="text-gray-600">Please login with your details here</p>
-      </div>
-      <div className="space-y-4">
-        <input
+    <FormContainer>
+      <Title>Welcome Back</Title>
+      <Subtitle>Sign in to your Chiranjivi account</Subtitle>
+
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+
+      <FormGroup>
+        <Label>Email Address</Label>
+        <Input
           type="email"
-          // Added bg-white to ensure it matches the sign up page exactly
-          className="w-full p-3 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-400"
-          placeholder="Email Address"
+          placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <input
+      </FormGroup>
+
+      <FormGroup>
+        <Label>Password</Label>
+        <Input
           type="password"
-          className="w-full p-3 bg-white border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder-gray-400"
-          placeholder="Password"
+          placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyPress={(e) => { if (e.key === "Enter") handleSignIn(); }}
         />
-        <button
-          onClick={handleSignIn}
-          disabled={buttonDisabled}
-          className={`w-full p-3 mt-4 font-semibold text-white bg-blue-600 rounded-md focus:outline-none transition-colors duration-200 ${
-            buttonDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "Signing In..." : "Sign In"}
-        </button>
-      </div>
-    </div>
+      </FormGroup>
+      
+      <Button onClick={handleSignIn} disabled={buttonDisabled}>
+        {loading ? "Signing In..." : "Sign In"}
+      </Button>
+    </FormContainer>
   );
 };
 

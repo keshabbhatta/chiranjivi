@@ -36,7 +36,7 @@ export default function DietRecommender() {
   const [loadingImage, setLoadingImage] = useState(false);
   const [error, setError] = useState("");
 
-  const token = localStorage.getItem("token"); // लगइन टोकन
+  const token = sessionStorage.getItem("vidhyalaya-app-token"); // लगइन टोकन
 
   // =========================
   // HANDLERS

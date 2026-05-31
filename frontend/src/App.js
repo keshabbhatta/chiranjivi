@@ -14,6 +14,7 @@ import Dietplan from './pages/Dietplan';
 import Profile from './pages/Profile';
 import Admin from './components/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
+import Footer from './pages/Footer';
 
 function App() {
     const { currentUser } = useSelector((state) => state.user);
@@ -44,6 +45,7 @@ function App() {
                                 />
                             </Routes>
                         </div>
+                        <Footer />
                     </div>
                 ) : (
                     <div className="flex flex-col w-full h-screen bg-gray-100 text-gray-900 overflow-hidden">

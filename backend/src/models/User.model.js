@@ -16,6 +16,9 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String, enum: ["user", "doctor", "admin"], default: "user",
     },
+    doctorUsername: {
+      type: String, unique: true, sparse: true, lowercase: true, trim: true,
+    },
     avatar: {
       type: String, default: "",
     },
@@ -30,6 +33,7 @@ const userSchema = new mongoose.Schema(
       phone: { type: String, default: "" },
     },
     isActive: { type: Boolean, default: true },
+    isOnline: { type: Boolean, default: false },
     lastLogin: { type: Date },
     resetPasswordToken:   { type: String },
     resetPasswordExpires: { type: Date },

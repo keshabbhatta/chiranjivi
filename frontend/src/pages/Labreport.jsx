@@ -178,7 +178,7 @@ export default function Labreport() {
   const [error, setError] = useState("");
 
   const fileRef = useRef();
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("vidhyalaya-app-token");
 
   const handleFile = (f) => {
     if (!f) return;

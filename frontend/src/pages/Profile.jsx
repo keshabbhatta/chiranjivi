@@ -11,7 +11,7 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchSavedReports = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("vidhyalaya-app-token");
       if (!token) return;
 
       setLoadingReports(true);
@@ -46,7 +46,7 @@ const Profile = () => {
     if (!confirmDelete) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("vidhyalaya-app-token");
       const res = await fetch(`${API_BASE}/lab-reports/${reportId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

@@ -62,23 +62,6 @@ const CloseBtn = styled.button`
   }
 `;
 
-const CurrentUserCard = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-  background: rgba(15, 23, 42, 0.9);
-`;
-
-const StatusBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #94a3b8;
-  font-size: 12px;
-`;
-
 const List = styled.div`
   flex: 1;
   overflow-y: auto;
@@ -367,17 +350,14 @@ const SendBtn = styled.button`
 const Chat = () => {
   const currentUser = useSelector((state) => state.user.user);
   const [doctors, setDoctors] = useState([]);
-  const [patients, setPatients] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [mobileView, setMobileView] = useState(null);
-
-  const isDoctor = currentUser?.role === "doctor";
-  const isPatient = currentUser?.role === "patient" || currentUser?.role === "user";
 
   useEffect(() => {
     if (!currentUser?._id) return;
@@ -387,43 +367,24 @@ const Chat = () => {
     socket.on("onlineUsers", setOnlineUsers);
     socket.on("receiveMessage", handleNewMessage);
 
-    const handleDoctorStatusUpdate = ({ userId, isOnline }) => {
-      if (isPatient) {
-        loadInitialData();
-      }
-    };
-
-    socket.on("doctorStatusUpdate", handleDoctorStatusUpdate);
-
     loadInitialData();
 
     return () => {
       socket.off("onlineUsers");
       socket.off("receiveMessage");
-      socket.off("doctorStatusUpdate", handleDoctorStatusUpdate);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?._id]);
 
   const loadInitialData = async () => {
     try {
-      const isDoctor = currentUser?.role === "doctor";
-      const isPatient = currentUser?.role === "patient" || currentUser?.role === "user";
-
-      if (isPatient) {
+      if (currentUser?.role === "patient") {
         const res = await API.get("/user/doctors");
         setDoctors(res.data.doctors || []);
         setMobileView("sidebar");
-      } else if (isDoctor) {
+      } else if (currentUser?.role === "doctor") {
         const res = await API.get("/chat/conversations");
-        const conversations = res.data.conversations || [];
-        setConversations(conversations);
+        setConversations(res.data.conversations || []);
         setMobileView("sidebar");
-
-        if (conversations.length === 0) {
-          const patientRes = await API.get("/user/patients");
-          setPatients(patientRes.data.patients || []);
-        }
       }
     } catch (error) {
       console.error("Failed to load data:", error);
@@ -460,6 +421,7 @@ const Chat = () => {
 
   const handleDoctorClick = async (doctor) => {
     setSelectedUser(doctor);
+    setLoading(true);
 
     try {
       const res = await API.post("/chat/conversation", {
@@ -477,28 +439,8 @@ const Chat = () => {
       setMobileView("chat");
     } catch (error) {
       console.error("Failed to create/get conversation:", error);
-    }
-  };
-
-  const handlePatientClick = async (patient) => {
-    setSelectedUser(patient);
-
-    try {
-      const res = await API.post("/chat/conversation", {
-        receiverId: patient._id,
-      });
-
-      const conversation = {
-        _id: res.data.conversation._id,
-        otherUser: patient,
-        participants: res.data.conversation.participants,
-      };
-
-      setSelectedConversation(conversation);
-      setMessages([]);
-      setMobileView("chat");
-    } catch (error) {
-      console.error("Failed to create/get conversation:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -530,102 +472,71 @@ const Chat = () => {
 
   const isUserOnline = (userId) => onlineUsers.includes(userId);
 
-  const renderSidebarItems = () => {
-    if (isPatient) {
-      return doctors.length > 0 ? (
-        doctors.map((doctor) => (
-          <ListItem
-            key={doctor._id}
-            active={selectedUser?._id === doctor._id}
-            onClick={() => handleDoctorClick(doctor)}
-          >
-            <Avatar image={doctor.avatar} isOnline={isUserOnline(doctor._id)}>
-              {!doctor.avatar && doctor.name.charAt(0)}
-            </Avatar>
-            <UserInfo>
-              <UserName>{doctor.name}</UserName>
-              <UserMeta>
-                {doctor.specialization}
-                {doctor.experience > 0 && ` • ${doctor.experience}y`}
-              </UserMeta>
-            </UserInfo>
-          </ListItem>
-        ))
-      ) : (
-        <EmptyState>No doctors available</EmptyState>
-      );
-    }
-
-    if (conversations.length > 0) {
-      return conversations.map((conv) => (
-        <ListItem
-          key={conv._id}
-          active={selectedConversation?._id === conv._id}
-          onClick={() => handleConversationClick(conv)}
-        >
-          <Avatar
-            image={conv.otherUser?.avatar}
-            isOnline={isUserOnline(conv.otherUser?._id)}
-          >
-            {!conv.otherUser?.avatar && conv.otherUser?.name.charAt(0)}
-          </Avatar>
-          <UserInfo>
-            <UserName>{conv.otherUser?.name}</UserName>
-            <UserMeta>Patient</UserMeta>
-          </UserInfo>
-        </ListItem>
-      ));
-    }
-
-    if (patients.length > 0) {
-      return patients.map((patient) => (
-        <ListItem
-          key={patient._id}
-          active={selectedUser?._id === patient._id}
-          onClick={() => handlePatientClick(patient)}
-        >
-          <Avatar image={patient.avatar} isOnline={isUserOnline(patient._id)}>
-            {!patient.avatar && patient.name.charAt(0)}
-          </Avatar>
-          <UserInfo>
-            <UserName>{patient.name}</UserName>
-            <UserMeta>Patient</UserMeta>
-          </UserInfo>
-        </ListItem>
-      ));
-    }
-
-    return <EmptyState>No conversations yet</EmptyState>;
-  };
-
   return (
     <Container>
       <Sidebar showOnMobile={mobileView === "sidebar"}>
         <SidebarHeader>
           <SidebarTitle>
-            {currentUser?.role === "patient" || currentUser?.role === "user" ? "Doctors" : "Conversations"}
+            {currentUser?.role === "patient" ? "Doctors" : "Conversations"}
           </SidebarTitle>
           <CloseBtn onClick={() => setMobileView("chat")}>✕</CloseBtn>
         </SidebarHeader>
 
-        <CurrentUserCard>
-          <Avatar
-            image={currentUser?.avatar}
-            isOnline={isUserOnline(currentUser?._id)}
-          >
-            {!currentUser?.avatar && currentUser?.name?.charAt(0)}
-          </Avatar>
-          <UserInfo>
-            <UserName>{currentUser?.name}</UserName>
-            <StatusBadge>
-              {isUserOnline(currentUser?._id) ? "Online" : "Offline"}
-              • {currentUser?.role === "doctor" ? "Doctor" : "Patient"}
-            </StatusBadge>
-          </UserInfo>
-        </CurrentUserCard>
-
-        <List>{renderSidebarItems()}</List>
+        <List>
+          {currentUser?.role === "patient" ? (
+            doctors.length > 0 ? (
+              doctors.map((doctor) => (
+                <ListItem
+                  key={doctor._id}
+                  active={selectedUser?._id === doctor._id}
+                  onClick={() => handleDoctorClick(doctor)}
+                >
+                  <Avatar
+                    image={doctor.avatar}
+                    isOnline={isUserOnline(doctor._id)}
+                  >
+                    {!doctor.avatar && doctor.name.charAt(0)}
+                  </Avatar>
+                  <UserInfo>
+                    <UserName>{doctor.name}</UserName>
+                    <UserMeta>
+                      {doctor.specialization}
+                      {doctor.experience > 0 && ` • ${doctor.experience}y`}
+                    </UserMeta>
+                  </UserInfo>
+                </ListItem>
+              ))
+            ) : (
+              <EmptyState>No doctors available</EmptyState>
+            )
+          ) : (
+            conversations.length > 0 ? (
+              conversations.map((conv) => (
+                <ListItem
+                  key={conv._id}
+                  active={selectedConversation?._id === conv._id}
+                  onClick={() => handleConversationClick(conv)}
+                >
+                  <Avatar
+                    image={conv.otherUser?.avatar}
+                    isOnline={isUserOnline(conv.otherUser?._id)}
+                  >
+                    {!conv.otherUser?.avatar &&
+                      conv.otherUser?.name.charAt(0)}
+                  </Avatar>
+                  <UserInfo>
+                    <UserName>{conv.otherUser?.name}</UserName>
+                    <UserMeta>Patient</UserMeta>
+                  </UserInfo>
+                </ListItem>
+              ))
+            ) : (
+              <EmptyState>No conversations yet</EmptyState>
+            )
+          )}
+        </List>
       </Sidebar>
+
       <ChatSection showOnMobile={mobileView === "chat"}>
         {selectedConversation ? (
           <>
@@ -641,26 +552,53 @@ const Chat = () => {
                 <HeaderMeta>
                   <HeaderName>{selectedUser?.name}</HeaderName>
                   <HeaderStatus>
-                    {isUserOnline(selectedUser?._id) ? "Online" : "Offline"}
-                    {selectedUser?.specialization && ` • ${selectedUser.specialization}`}
+                    {isUserOnline(selectedUser?._id)
+                      ? "Online"
+                      : "Offline"}
+                    {selectedUser?.specialization &&
+                      ` • ${selectedUser.specialization}`}
                   </HeaderStatus>
                 </HeaderMeta>
               </HeaderInfo>
-              <CloseHeaderBtn onClick={() => setSelectedConversation(null)}>✕</CloseHeaderBtn>
+              <CloseHeaderBtn onClick={() => setSelectedConversation(null)}>
+                ✕
+              </CloseHeaderBtn>
             </ChatHeader>
 
             <MessagesContainer>
-              {messages.map(msg => (
-                <div key={msg._id} style={{ textAlign: msg.sender?._id === currentUser._id ? "right" : "left" }}>
-                  <div style={{ background: msg.sender?._id === currentUser._id ? "#06b6d4" : "rgba(71, 85, 105, 0.3)", color: "#fff", padding: "10px 15px", borderRadius: "10px", display: "inline-block", maxWidth: "70%" }}>
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
+              {messages.length > 0 ? (
+                messages.map((msg) => (
+                  <MessageBubble
+                    key={msg._id}
+                    isOwn={msg.sender?._id === currentUser._id}
+                  >
+                    <MessageContent
+                      isOwn={msg.sender?._id === currentUser._id}
+                    >
+                      {msg.content}
+                    </MessageContent>
+                  </MessageBubble>
+                ))
+              ) : (
+                <EmptyState>No messages yet. Start the conversation!</EmptyState>
+              )}
             </MessagesContainer>
+
             <InputSection>
-              <MessageInput value={messageText} onChange={(e) => setMessageText(e.target.value)} onKeyPress={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="Type a message..." />
-              <SendBtn onClick={sendMessage} disabled={!messageText.trim()}>Send</SendBtn>
+              <MessageInput
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                placeholder="Type a message..."
+              />
+              <SendBtn onClick={sendMessage} disabled={!messageText.trim()}>
+                Send
+              </SendBtn>
             </InputSection>
           </>
         ) : (

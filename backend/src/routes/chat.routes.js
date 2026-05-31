@@ -1,60 +1,26 @@
 const express = require("express");
-
 const router = express.Router();
+const {
+  getConversations,
+  getMessages,
+  createOrGetConversation,
+  sendMessage,
+} = require("../controllers/chat.controller");
+const { protect } = require("../middleware/auth.middleware");
 
-const Conversation = require("../models/Conversation");
+// Protected routes
+router.use(protect);
 
-const Chat = require("../models/chat.model");
+// Get all conversations for current user
+router.get("/conversations", getConversations);
 
+// Get or create conversation with specific user
+router.post("/conversation", createOrGetConversation);
 
-// CREATE CONVERSATION
-router.post("/conversation", async (req, res) => {
+// Get messages from a conversation
+router.get("/messages/:conversationId", getMessages);
 
-  try {
-
-    const { senderId, receiverId } = req.body;
-
-    let conversation = await Conversation.findOne({
-      participants: {
-        $all: [senderId, receiverId],
-      },
-    });
-
-    if (!conversation) {
-
-      conversation = await Conversation.create({
-        participants: [senderId, receiverId],
-      });
-    }
-
-    res.json(conversation);
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
-
-
-// GET MESSAGES
-router.get("/messages/:conversationId", async (req, res) => {
-
-  try {
-
-    const messages = await Chat.find({
-      conversationId: req.params.conversationId,
-    }).populate("sender", "name");
-
-    res.json(messages);
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-});
+// Send message (API fallback for non-socket sends)
+router.post("/message", sendMessage);
 
 module.exports = router;

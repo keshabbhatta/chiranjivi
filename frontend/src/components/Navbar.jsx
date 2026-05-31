@@ -180,7 +180,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const currentUser = useSelector((state) => state.user);
+  const { currentUser } = useSelector((state) => state.user);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -258,6 +258,11 @@ const Navbar = () => {
             <SimpleMenuItem onClick={handleClose}>
               <StyledNavLink to="/dietplan" style={{ width: '100%', color: 'inherit' }}>Diet Plan</StyledNavLink>
             </SimpleMenuItem>
+            {currentUser?.role === 'admin' && (
+              <SimpleMenuItem onClick={handleClose}>
+                <StyledNavLink to="/admin" style={{ width: '100%', color: 'inherit' }}>Admin Panel</StyledNavLink>
+              </SimpleMenuItem>
+            )}
             <SimpleMenuItem onClick={handleLogout} sx={{ color: '#ef4444 !important' }}>
               Logout
             </SimpleMenuItem>

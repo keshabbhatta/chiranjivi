@@ -1,95 +1,127 @@
-import Message from "../models/Message.js";
-import Conversation from "../models/Conversation.js";
+const { Server } = require("socket.io");
 
-const onlineUsers = [];
+const Chat = require("../models/chat.model");
+const Conversation = require("../models/Conversation");
 
-const socketHandler = (io) => {
+let onlineUsers = [];
+let userSocketMap = {}; // Map userId to socketId for real-time updates
+
+const initializeSocket = (server) => {
+  const io = new Server(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+    transports: ["websocket"],
+  });
 
   io.on("connection", (socket) => {
+    console.log("🟢 User Connected");
 
-    console.log("Socket Connected");
-
-    // USER ONLINE
+    // ======================
+    // JOIN
+    // ======================
     socket.on("join", (userId) => {
-
       socket.userId = userId;
+      userSocketMap[userId] = socket.id;
+
+      socket.join(userId);
 
       if (!onlineUsers.includes(userId)) {
         onlineUsers.push(userId);
       }
 
       io.emit("onlineUsers", onlineUsers);
+      io.emit("doctorStatusUpdate", { userId, isOnline: true });
+
+      console.log("✅ User Joined:", userId);
     });
 
+    // ======================
     // SEND MESSAGE
+    // ======================
     socket.on("sendMessage", async (data) => {
-
       try {
+        console.log("📩 Incoming:", data);
 
-        const newMessage =
-          await Message.create({
-            conversationId:
-              data.conversationId,
-
-            sender: socket.userId,
-
-            content: data.content,
-
-            type: data.type,
-
-            imageUrl: data.imageUrl,
-          });
+        const newMessage = await Chat.create({
+          conversationId: data.conversationId,
+          sender: data.sender,
+          content: data.content,
+        });
 
         const populatedMessage =
-          await Message.findById(
-            newMessage._id
-          ).populate(
+          await Chat.findById(newMessage._id).populate(
             "sender",
-            "name avatar"
+            "name"
           );
 
         await Conversation.findByIdAndUpdate(
           data.conversationId,
           {
             lastMessage: newMessage._id,
-            updatedAt: new Date(),
+            lastActivity: new Date(),
           }
         );
 
-        io.emit(
-          "newMessage",
+        io.to(data.receiver).emit(
+          "receiveMessage",
           populatedMessage
         );
 
+        io.to(data.sender).emit(
+          "receiveMessage",
+          populatedMessage
+        );
+
+        console.log("✅ Message Sent");
+      } catch (error) {
+        console.log("❌ Socket Error:", error);
+      }
+    });
+
+    // ======================
+    // TYPING
+    // ======================
+    socket.on("typing", (data) => {
+      socket
+        .to(data.receiver)
+        .emit("typing", data);
+    });
+
+    // ======================
+    // MESSAGE SEEN
+    // ======================
+    socket.on("seen", async ({ messageId }) => {
+      try {
+        await Chat.findByIdAndUpdate(messageId, {
+          seen: true,
+        });
+
+        io.emit("messageSeen", {
+          messageId,
+        });
       } catch (error) {
         console.log(error);
       }
     });
 
-    // TYPING
-    socket.on("typing", (data) => {
-
-      socket.broadcast.emit(
-        "typing",
-        data
-      );
-    });
-
+    // ======================
     // DISCONNECT
+    // ======================
     socket.on("disconnect", () => {
+      onlineUsers = onlineUsers.filter(
+        (id) => id !== socket.userId
+      );
 
-      const index =
-        onlineUsers.indexOf(socket.userId);
-
-      if (index !== -1) {
-        onlineUsers.splice(index, 1);
-      }
+      delete userSocketMap[socket.userId];
 
       io.emit("onlineUsers", onlineUsers);
+      io.emit("doctorStatusUpdate", { userId: socket.userId, isOnline: false });
 
-      console.log("Socket Disconnected");
+      console.log("🔴 User Disconnected");
     });
   });
 };
 
-export default socketHandler;
+module.exports = initializeSocket;
